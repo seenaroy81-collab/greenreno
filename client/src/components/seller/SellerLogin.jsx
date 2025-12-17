@@ -28,7 +28,7 @@ const SellerLogin = () => {
     if (isSeller) {
       navigate("/seller");
     }
-  }, [isSeller]);
+  }, [isSeller, navigate]);
   return (
     !isSeller && (
       <form
@@ -62,6 +62,13 @@ const SellerLogin = () => {
           </div>
           <button className="bg-[var(--color-primary)] text-white w-full py-2 rounded-md cursor-pointer">
             Login
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="mt-2 text-sm text-[var(--color-primary)] underline"
+          >
+            Go back to Home
           </button>
         </div>
       </form>
