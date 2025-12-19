@@ -149,21 +149,21 @@ export const footerLinks = [
   {
     title: "Quick Links",
     links: [
-      { text: "Home", url: "/" },
-      { text: "Best Sellers", url: "/best-sellers" },
-      { text: "Offers & Deals", url: "/offers" },
-      { text: "Contact Us", url: "/contact" },
-      { text: "FAQs", url: "/faqs" },
+      { text: "Home", url: "#" },
+      { text: "Best Sellers", url: "#" },
+      { text: "Offers & Deals", url: "#" },
+      { text: "Contact Us", url: "#" },
+      { text: "FAQs", url: "#" },
     ],
   },
   {
     title: "Need help?",
     links: [
-      { text: "Delivery Information", url: "/delivery-info" },
-      { text: "Return & Refund Policy", url: "/returns" },
-      { text: "Payment Methods", url: "/payments" },
-      { text: "Track your Order", url: "/track-order" },
-      { text: "Contact Us", url: "/contact" },
+      { text: "Delivery Information", url: "#" },
+      { text: "Return & Refund Policy", url: "#" },
+      { text: "Payment Methods", url: "#" },
+      { text: "Track your Order", url: "#" },
+      { text: "Contact Us", url: "#" },
     ],
   },
   {
@@ -255,8 +255,8 @@ export const dummyProducts = [
     _id: "gd49g56h",
     name: "Spinach 500g",
     category: "Vegetables",
-    price: 22,
-    offerPrice: 19,
+    price: 18,
+    offerPrice: 15,
     image: [spinach_image_1],
     description: [
       "Rich in iron",
