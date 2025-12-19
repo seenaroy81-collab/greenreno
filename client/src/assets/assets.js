@@ -255,8 +255,8 @@ export const dummyProducts = [
     _id: "gd49g56h",
     name: "Spinach 500g",
     category: "Vegetables",
-    price: 18,
-    offerPrice: 15,
+    price: 22,
+    offerPrice: 19,
     image: [spinach_image_1],
     description: [
       "Rich in iron",

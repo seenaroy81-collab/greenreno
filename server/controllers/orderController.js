@@ -4,11 +4,10 @@ import Product from "../models/Product.js";
 import Stripe from "stripe";
 import User from "../models/User.js";
 
-// Place Order Cash On Delivery
 export const placeOrderCOD = async (req, res) => {
   try {
     const { items, address } = req.body;
-    const userId = req.userId;
+    const userId = req.userId; // Now using req.userId from auth middleware
 
     if (!address || !items || items.length === 0) {
       return res.status(400).json({
@@ -56,11 +55,11 @@ export const placeOrderCOD = async (req, res) => {
   }
 };
 
-// Place Order Stripe (Online Payment)
+//Place Order Stripe :/api/order/stripe
 export const placeOrderStripe = async (req, res) => {
   try {
     const { items, address } = req.body;
-    const userId = req.userId;
+    const userId = req.userId; // Now using req.userId from auth middleware
     const { origin } = req.headers;
 
     if (!address || !items || items.length === 0) {
@@ -75,17 +74,17 @@ export const placeOrderStripe = async (req, res) => {
     let amount = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
+      productData.push({
+        name: product.name,
+        price: product.offerPrice,
+        quantity: item.quantity,
+      });
       if (!product) {
         return res.status(404).json({
           success: false,
           message: `Product ${item.product} not found`,
         });
       }
-      productData.push({
-        name: product.name,
-        price: product.offerPrice,
-        quantity: item.quantity,
-      });
       amount += product.offerPrice * item.quantity;
     }
 
@@ -100,15 +99,15 @@ export const placeOrderStripe = async (req, res) => {
       paymentType: "Online",
       status: "Online",
     });
-
-    // Stripe Gateway Initialize
+    //stripe gateway Initialize
     const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    // Create line items for Stripe
+    //create line items for stripe
+    // To this:
     const line_items = productData.map((item) => {
       return {
         price_data: {
-          currency: "usd",
+          currency: "inr",
           product_data: {
             name: item.name,
           },
@@ -117,8 +116,7 @@ export const placeOrderStripe = async (req, res) => {
         quantity: item.quantity,
       };
     });
-
-    // Create session
+    //create session
     const session = await stripeInstance.checkout.sessions.create({
       line_items,
       mode: "payment",
@@ -143,8 +141,10 @@ export const placeOrderStripe = async (req, res) => {
   }
 };
 
-// Stripe Webhooks to verify Payments Action :/stripe
+//Stripe Webhooks to verify Payments Action :/stripe
+
 export const stripeWebhooks = async (req, res) => {
+  //Stripe Gateway Initialize
   const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
   const sig = req.headers["stripe-signature"];
   let event;
@@ -155,28 +155,31 @@ export const stripeWebhooks = async (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (error) {
-    return res.status(400).send(`Webhook Error: ${error.message}`);
+    res.status(400).send(`Webhook Error:${error.message}`);
   }
 
+  //Handle the event
   switch (event.type) {
     case "payment_intent.succeeded": {
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
-      // Getting Session Metadata
+      //Getting Session Metadata
       const session = await stripeInstance.checkout.sessions.list({
         payment_intent: paymentIntentId,
       });
       const { orderId, userId } = session.data[0].metadata;
-      // Mark Payment As paid
+
+      //Mark Payment As paid
       await Order.findByIdAndUpdate(orderId, { isPaid: true });
-      // Clear user cart
+      //Clear user cart
+
       await User.findByIdAndUpdate(userId, { cartItems: {} });
       break;
     }
     case "payment_intent.payment_failed": {
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
-      // Getting Session Metadata
+      //Getting Session Metadata
       const session = await stripeInstance.checkout.sessions.list({
         payment_intent: paymentIntentId,
       });
@@ -184,6 +187,7 @@ export const stripeWebhooks = async (req, res) => {
       await Order.findByIdAndDelete(orderId);
       break;
     }
+
     default:
       console.error(`Unhandled event type ${event.type}`);
       break;
@@ -191,10 +195,11 @@ export const stripeWebhooks = async (req, res) => {
   res.json({ received: true });
 };
 
-// Get Orders by User ID
+//Get Orders by User ID:/api/order/user
 export const getUserOrders = async (req, res) => {
   try {
-    const userId = req.userId;
+    const userId = req.userId; // Using req.userId from auth middleware
+
     const orders = await Order.find({
       userId,
       $or: [{ paymentType: "COD" }, { isPaid: true }],
@@ -215,8 +220,7 @@ export const getUserOrders = async (req, res) => {
     });
   }
 };
-
-// Get All Orders
+//GET ALL orders
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({
@@ -224,7 +228,7 @@ export const getAllOrders = async (req, res) => {
     })
       .populate("items.product")
       .populate("address")
-      .populate("userId", "name email")
+      .populate("userId", "name email") // Include user basic info
       .sort({ createdAt: -1 });
 
     res.json({
