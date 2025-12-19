@@ -120,7 +120,7 @@ export const AppContextProvider = ({ children }) => {
     fetchSeller();
     fetchProducts();
   }, []);
-  //Update Database Cart Items
+  //Update Database Cart Ite
   useEffect(() => {
     const updateCart = async () => {
       try {
